@@ -50,7 +50,7 @@ android {
     buildTypes {
         getByName("release") {
             isMinifyEnabled = false
-            signingConfig = signingConfigs.getByName("FCLKey")
+            signingConfig = signingConfigs.getByName("key0")
         }
         create("fordebug") {
             initWith(getByName("debug"))
