@@ -192,6 +192,7 @@ EXTERNAL_API void pojavSetWindowHint(int hint, int value) {
 static const long MIN_FRAME_TIME_NS = 1000000L; // 1ms
 
 EXTERNAL_API void pojavSwapBuffers() {
+    nanosleep(10000000L, NULL);
     static __thread struct timespec lastSwap = {0, 0};
     struct timespec now;
 
