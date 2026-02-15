@@ -175,7 +175,7 @@ EXTERNAL_API void pojavSetWindowHint(int hint, int value) {
 }
 
 
-/*EXTERNAL_API void pojavSwapBuffers() {
+EXTERNAL_API void pojavSwapBuffers() {
     fps++;
     if (pojav_environ->config_renderer == RENDERER_VIRGL)
         virglSwapBuffers();
