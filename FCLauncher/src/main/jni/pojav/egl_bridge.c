@@ -33,6 +33,12 @@
 #include "fcl/include/utils.h"
 #include "driver_helper/driver_helper.h"
 
+
+
+// 修改
+#include <time.h>
+//结束
+
 #define GLFW_CLIENT_API 0x22001
 /* Consider GLFW_NO_API as Vulkan API */
 #define GLFW_NO_API 0
@@ -173,12 +179,46 @@ EXTERNAL_API void pojavSetWindowHint(int hint, int value) {
     }
 }
 
-EXTERNAL_API void pojavSwapBuffers() {
+
+
+
+// 修改
+/*EXTERNAL_API void pojavSwapBuffers() {
     fps++;
     if (pojav_environ->config_renderer == RENDERER_VIRGL)
         virglSwapBuffers();
     else br_swap_buffers();
+}*/
+static const long MIN_FRAME_TIME_NS = 1000000L; // 1ms
+
+EXTERNAL_API void pojavSwapBuffers() {
+    static __thread struct timespec lastSwap = {0, 0};
+    struct timespec now;
+
+    fps++;
+    if (pojav_environ->config_renderer == RENDERER_VIRGL)
+        virglSwapBuffers();
+    else br_swap_buffers();
+
+    // Prevent SurfaceTexture consumer thread from busy-waiting (spinning CPU)
+    // when the game uses frame rate limiting and GPU is not fully loaded.
+    // See: https://github.com/FCL-Team/FoldCraftLauncher/issues/1298
+    clock_gettime(CLOCK_MONOTONIC, &now);
+    if (lastSwap.tv_sec != 0 || lastSwap.tv_nsec != 0) {
+        long elapsed_ns = (now.tv_sec - lastSwap.tv_sec) * 1000000000L
+                        + (now.tv_nsec - lastSwap.tv_nsec);
+        if (elapsed_ns < MIN_FRAME_TIME_NS) {
+            struct timespec sleep_time;
+            sleep_time.tv_sec = 0;
+            sleep_time.tv_nsec = MIN_FRAME_TIME_NS - elapsed_ns;
+            nanosleep(&sleep_time, NULL);
+        }
+    }
+    clock_gettime(CLOCK_MONOTONIC, &lastSwap);
 }
+
+// 结束
+
 
 
 EXTERNAL_API void pojavMakeCurrent(void* window) {
